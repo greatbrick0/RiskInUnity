@@ -16,6 +16,10 @@ public class Generator : MonoBehaviour
     private Image gameStatePanel;
     [SerializeField]
     private TextMeshProUGUI gameStateText;
+    [SerializeField]
+    private TextMeshProUGUI reservesLabel;
+    [SerializeField]
+    private GameObject centreButtonObj;
 
     [SerializeField]
     private List<CountryNode> everyCountry = new();
@@ -31,8 +35,8 @@ public class Generator : MonoBehaviour
         get { return _playerIndex; }
         set 
         { 
-            _playerIndex = value % players.Count; 
-            gameStatePanel.color = players[_playerIndex].playerColour;
+            _playerIndex = value % players.Count;
+            Turn();
         }
     }
 
@@ -45,6 +49,30 @@ public class Generator : MonoBehaviour
     {
         playerIndex = 0;
 
+        MapInit();
+
+        foreach (CountryNode ii in everyCountry)
+        {
+            instanceRef = Instantiate(countryVisual, ii.position, Quaternion.identity, canvas);
+            instanceRef.transform.position += canvas.position;
+            ii.CreateVisual(instanceRef.GetComponent<CountryVisualHandler>());
+            ii.UpdateVisual();
+        }
+    }
+
+    void Turn()
+    {
+        gameStatePanel.color = players[playerIndex].playerColour;
+        AttemptExitPrepMore();
+        if(gameState == "Growing")
+        {
+            GetCurrentPlayer().GainReserves();
+        }
+        UpdateReservesLabel(GetCurrentPlayer().armyCount);
+    }
+
+    private void MapInit()
+    {
         ContinentGroup northAmerica = new ContinentGroup(Color.red, 3);
         ContinentGroup europe = new ContinentGroup(Color.blue, 4);
         ContinentGroup africa = new ContinentGroup(Color.green, 5);
@@ -59,22 +87,14 @@ public class Generator : MonoBehaviour
         everyCountry.Add(new CountryNode("Germany", new Vector2(180, 70), europe, this));
         everyCountry.Add(new CountryNode("Spain", new Vector2(100, -5), europe, this));
 
-        everyCountry.Add(new CountryNode("Guniea", new Vector2(60, -110), africa, this));
-        everyCountry.Add(new CountryNode("Egypt", new Vector2(140, -110), africa, this));
-        everyCountry.Add(new CountryNode("South Africa", new Vector2(100, -185), africa, this));
+        everyCountry.Add(new CountryNode("Guniea", new Vector2(90, -110), africa, this));
+        everyCountry.Add(new CountryNode("Egypt", new Vector2(170, -110), africa, this));
+        everyCountry.Add(new CountryNode("South Africa", new Vector2(130, -185), africa, this));
 
         ConnectByDistance(100.0f);
         everyCountry[0].AddNeighbor(everyCountry[5]);
         everyCountry[2].AddNeighbor(everyCountry[8]);
         everyCountry[7].AddNeighbor(everyCountry[9]);
-
-        foreach (CountryNode ii in everyCountry)
-        {
-            instanceRef = Instantiate(countryVisual, ii.position, Quaternion.identity, canvas);
-            instanceRef.transform.position += canvas.position;
-            ii.CreateVisual(instanceRef.GetComponent<CountryVisualHandler>());
-            ii.UpdateVisual();
-        }
     }
 
     public bool AllCountriesControlled()
@@ -95,6 +115,31 @@ public class Generator : MonoBehaviour
         }
     }
 
+    private bool AllPlayersEmpty()
+    {
+        foreach (PlayerData ii in players)
+        {
+            if(ii.armyCount > 0) return false;
+        }
+        return true;
+    }
+
+    public void AttemptExitPrepMore()
+    {
+        if (AllPlayersEmpty() && gameState == "Prep: More")
+        {
+            gameState = "Growing";
+            gameStateText.text = gameState;
+            centreButtonObj.SetActive(true);
+        }
+    }
+
+    public void AttemptExitGrowing()
+    {
+        gameState = "Attacking";
+        gameStateText.text = gameState;
+    }
+
     private void ConnectByDistance(float distance)
     {
         foreach (CountryNode ii in everyCountry)
@@ -104,5 +149,28 @@ public class Generator : MonoBehaviour
                 if((ii.position - jj.position).magnitude <= distance) ii.AddNeighbor(jj);
             }
         }
+    }
+
+    public void CentreButtonAction()
+    {
+        switch (gameState)
+        {
+            case "Growing":
+                gameState = "Attacking";
+                break;
+            case "Attacking":
+                gameState = "Moving";
+                break;
+            case "Moving":
+                gameState = "Growing";
+                playerIndex += 1;
+                break;
+        }
+        gameStateText.text = gameState;
+    }
+
+    public void UpdateReservesLabel(int value)
+    {
+        reservesLabel.text = "Reserves: " + value.ToString();
     }
 }

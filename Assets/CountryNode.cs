@@ -52,6 +52,12 @@ public class CountryNode
                 IncreaseArmy(1);
                 mapRef.playerIndex += 1;
                 break;
+            case "Growing":
+                if (owner != mapRef.GetCurrentPlayer()) return;
+                IncreaseArmy(1);
+                mapRef.UpdateReservesLabel(mapRef.GetCurrentPlayer().armyCount);
+                if (mapRef.GetCurrentPlayer().armyCount == 0) mapRef.AttemptExitGrowing();
+                break;
             default:
                 break;
         }

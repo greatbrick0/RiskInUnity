@@ -15,4 +15,9 @@ public class PlayerData
         playerColour = newColour;
         armyCount = newArmyCount;
     }
+
+    public void GainReserves()
+    {
+        armyCount += Mathf.Max(3, Mathf.FloorToInt(armyCount / 3));
+    }
 }
