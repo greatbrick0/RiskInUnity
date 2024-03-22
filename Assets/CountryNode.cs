@@ -84,6 +84,7 @@ public class CountryNode
         owner.armyCount -= 1;
         owner.countryCount += 1;
         UpdateVisual();
+        if(group.IsFullyControlled()) owner.continentBonus += group.bonus;
     }
 
     private void IncreaseArmy(int amount)

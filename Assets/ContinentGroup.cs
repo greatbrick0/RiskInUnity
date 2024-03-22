@@ -6,7 +6,7 @@ public class ContinentGroup
 {
     public List<CountryNode> nodes = new();
     public Color color { get; private set; }
-    int bonus;
+    public int bonus { get; private set; }
 
     public ContinentGroup(Color newColor, int newBonus)
     { 

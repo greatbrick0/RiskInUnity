@@ -7,6 +7,7 @@ using UnityEngine;
 public class PlayerData
 {
     public int countryCount = 0;
+    public int continentBonus = 0;
     public int armyCount;
     public Color playerColour;
 
@@ -19,5 +20,6 @@ public class PlayerData
     public void GainReserves()
     {
         armyCount += Mathf.Max(3, Mathf.FloorToInt(armyCount / 3));
+        armyCount += continentBonus;
     }
 }
